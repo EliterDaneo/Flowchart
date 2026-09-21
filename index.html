@@ -1,0 +1,2262 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Petualangan Flowchart — Media Ajar KKA</title>
+  <meta name="description"
+    content="Media pembelajaran interaktif Koding dan Kecerdasan Artifisial: Algoritma Pemrograman dan Diagram Alir (Flowchart).">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Plus+Jakarta+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --night: #171436;
+      --deep: #221C50;
+      --panel: #2B2463;
+      --line: #413A86;
+      --paper: #F4F2FF;
+      --dim: #B3AEE0;
+
+      /* warna ini punya arti: tiap simbol punya identitas warna */
+      --terminator: #06D6A0;
+      --io: #FFD166;
+      --proses: #8A9BFF;
+      --keputusan: #EF476F;
+
+      --radius: 18px;
+      --maxw: 920px;
+      box-sizing: border-box;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box
+    }
+
+    html,
+    body {
+      height: 100%
+    }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(1100px 620px at 78% -8%, #3A2E7E 0%, rgba(58, 46, 126, 0) 60%),
+        radial-gradient(800px 500px at 4% 104%, #1E3A6B 0%, rgba(30, 58, 107, 0) 58%),
+        var(--night);
+      color: var(--paper);
+      font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* kertas milimeter tipis, seperti buku rancangan */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image: linear-gradient(rgba(255, 255, 255, .035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, .035) 1px, transparent 1px);
+      background-size: 34px 34px;
+    }
+
+    h1,
+    h2,
+    h3 {
+      font-family: "Baloo 2", system-ui, sans-serif;
+      line-height: 1.15;
+      margin: 0 0 .4em
+    }
+
+    h1 {
+      font-size: clamp(2rem, 7vw, 3.5rem);
+      font-weight: 800;
+      letter-spacing: -.01em
+    }
+
+    h2 {
+      font-size: clamp(1.5rem, 5vw, 2.3rem);
+      font-weight: 700
+    }
+
+    h3 {
+      font-size: 1.12rem;
+      font-weight: 700
+    }
+
+    p {
+      margin: 0 0 1em;
+      max-width: 66ch
+    }
+
+    code,
+    .mono {
+      font-family: "JetBrains Mono", ui-monospace, monospace
+    }
+
+    /* ---------- kerangka ---------- */
+    .rail {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: rgba(255, 255, 255, .08);
+      z-index: 40
+    }
+
+    .rail i {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--terminator), var(--io));
+      transition: width .45s cubic-bezier(.4, 0, .2, 1)
+    }
+
+    .stage {
+      position: relative;
+      z-index: 1;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: calc(42px + env(safe-area-inset-top, 0px)) 20px calc(104px + env(safe-area-inset-bottom, 0px))
+    }
+
+    .slide {
+      display: none;
+      width: 100%;
+      max-width: var(--maxw);
+      animation: in .38s ease both
+    }
+
+    .slide.on {
+      display: block
+    }
+
+    @keyframes in {
+      from {
+        opacity: 0;
+        transform: translateY(14px)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    .kicker {
+      font-size: .8rem;
+      font-weight: 700;
+      color: var(--dim);
+      margin-bottom: .5rem
+    }
+
+    .kicker b {
+      color: var(--io)
+    }
+
+    .bar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 40;
+      display: flex;
+      justify-content: center;
+      padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+      background: linear-gradient(to top, var(--night) 58%, rgba(23, 20, 54, 0));
+    }
+
+    .bar-in {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      max-width: var(--maxw)
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+      border: 0
+    }
+
+    .nav {
+      background: var(--panel);
+      color: var(--paper);
+      border: 1.5px solid var(--line);
+      border-radius: 99px;
+      padding: 11px 20px;
+      font-weight: 700;
+      transition: transform .12s, background .15s
+    }
+
+    .nav:hover:not(:disabled) {
+      background: var(--line)
+    }
+
+    .nav:active:not(:disabled) {
+      transform: scale(.96)
+    }
+
+    .nav:disabled {
+      opacity: .32;
+      cursor: not-allowed
+    }
+
+    .nav.key {
+      background: var(--io);
+      color: #231B00;
+      border-color: var(--io)
+    }
+
+    .nav.key:hover {
+      background: #ffdd8c
+    }
+
+    .dots {
+      display: flex;
+      gap: 6px;
+      flex: 1;
+      justify-content: center;
+      flex-wrap: wrap
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, .2);
+      padding: 0;
+      transition: .2s
+    }
+
+    .dot.on {
+      background: var(--io);
+      width: 24px
+    }
+
+    .dot:hover {
+      background: rgba(255, 255, 255, .45)
+    }
+
+    .card {
+      background: var(--deep);
+      border: 1.5px solid var(--line);
+      border-radius: var(--radius);
+      padding: 20px
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px
+    }
+
+    @media(min-width:680px) {
+      .g2 {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .g3 {
+        grid-template-columns: repeat(3, 1fr)
+      }
+    }
+
+    /* ---------- hero ---------- */
+    .hero-flow {
+      margin: 8px 0 22px
+    }
+
+    .hero-flow svg {
+      width: 100%;
+      height: auto;
+      max-width: 460px;
+      display: block;
+      margin-inline: auto
+    }
+
+    .draw {
+      stroke-dasharray: var(--len);
+      stroke-dashoffset: var(--len);
+      animation: draw 1.1s ease forwards
+    }
+
+    .pop {
+      opacity: 0;
+      animation: pop .5s cubic-bezier(.34, 1.4, .5, 1) forwards
+    }
+
+    @keyframes draw {
+      to {
+        stroke-dashoffset: 0
+      }
+    }
+
+    @keyframes pop {
+      to {
+        opacity: 1
+      }
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(6, 214, 160, .12);
+      border: 1.5px solid rgba(6, 214, 160, .45);
+      color: var(--terminator);
+      border-radius: 99px;
+      padding: 6px 14px;
+      font-size: .82rem;
+      font-weight: 700;
+      margin-bottom: 18px
+    }
+
+    /* ---------- daftar tujuan ---------- */
+    .aim {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      background: var(--deep);
+      border: 1.5px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: .18s;
+      text-align: left;
+      width: 100%;
+      color: inherit
+    }
+
+    .aim:hover {
+      border-color: var(--terminator)
+    }
+
+    .aim .tick {
+      flex: 0 0 26px;
+      height: 26px;
+      border-radius: 8px;
+      border: 2px solid var(--line);
+      display: grid;
+      place-items: center;
+      font-size: .85rem;
+      color: transparent;
+      transition: .18s;
+      margin-top: 1px
+    }
+
+    .aim.done .tick {
+      background: var(--terminator);
+      border-color: var(--terminator);
+      color: #062B22
+    }
+
+    .aim.done {
+      border-color: rgba(6, 214, 160, .55)
+    }
+
+    .aim span {
+      font-size: .97rem
+    }
+
+    /* ---------- kartu simbol ---------- */
+    .sym {
+      perspective: 1000px;
+      background: none;
+      border: 0;
+      padding: 0;
+      width: 100%;
+      height: 190px;
+      cursor: pointer
+    }
+
+    .sym-in {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform .55s cubic-bezier(.4, 0, .2, 1);
+      transform-style: preserve-3d
+    }
+
+    .sym.flip .sym-in {
+      transform: rotateY(180deg)
+    }
+
+    .sym-f,
+    .sym-b {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      color: var(--paper);
+      border-radius: var(--radius);
+      border: 1.5px solid var(--line);
+      background: var(--deep);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-align: center
+    }
+
+    .sym-b {
+      transform: rotateY(180deg);
+      justify-content: center;
+      background: var(--panel)
+    }
+
+    .sym-f svg {
+      height: 62px;
+      width: auto
+    }
+
+    .sym-name {
+      font-family: "Baloo 2", sans-serif;
+      font-weight: 700;
+      font-size: 1rem
+    }
+
+    .sym-hint {
+      font-size: .72rem;
+      color: var(--dim)
+    }
+
+    .sym-b p {
+      margin: 0;
+      font-size: .88rem;
+      line-height: 1.45
+    }
+
+    .sym-b .tag {
+      font-family: "Baloo 2", sans-serif;
+      font-weight: 700;
+      font-size: .95rem;
+      margin-bottom: 6px
+    }
+
+    /* ---------- pelacak langkah ---------- */
+    .flow-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0
+    }
+
+    .node {
+      width: min(340px, 100%);
+      padding: 12px 16px;
+      border-radius: 12px;
+      text-align: center;
+      font-weight: 700;
+      font-size: .92rem;
+      border: 2px solid;
+      background: var(--deep);
+      transition: .25s;
+      opacity: .62;
+      word-break: break-word
+    }
+
+    .node.live {
+      opacity: 1;
+      transform: scale(1.04);
+      box-shadow: 0 0 0 5px rgba(255, 255, 255, .06)
+    }
+
+    .node.pass {
+      opacity: .85
+    }
+
+    .n-term {
+      border-color: var(--terminator);
+      color: var(--terminator);
+      border-radius: 99px
+    }
+
+    .n-io {
+      border-color: var(--io);
+      color: var(--io)
+    }
+
+    .n-pro {
+      border-color: var(--proses);
+      color: var(--proses)
+    }
+
+    .n-dec {
+      border-color: var(--keputusan);
+      color: var(--keputusan)
+    }
+
+    .arrow {
+      width: 2px;
+      height: 20px;
+      background: var(--line);
+      position: relative
+    }
+
+    .arrow::after {
+      content: "";
+      position: absolute;
+      bottom: -1px;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: var(--line)
+    }
+
+    .term-out {
+      background: #0D0B24;
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: .86rem;
+      min-height: 120px;
+      white-space: pre-wrap;
+      color: #9FF3DA
+    }
+
+    /* ---------- permainan urutan ---------- */
+    .pool {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center
+    }
+
+    .chip {
+      border-radius: 12px;
+      padding: 11px 15px;
+      font-weight: 700;
+      font-size: .88rem;
+      background: var(--panel);
+      border: 2px solid var(--line);
+      color: var(--paper);
+      transition: .16s
+    }
+
+    .chip:hover {
+      transform: translateY(-2px);
+      border-color: var(--io)
+    }
+
+    .chip[disabled] {
+      opacity: .22;
+      transform: none;
+      cursor: default
+    }
+
+    .shake {
+      animation: shk .34s
+    }
+
+    @keyframes shk {
+
+      0%,
+      100% {
+        transform: translateX(0)
+      }
+
+      25% {
+        transform: translateX(-7px)
+      }
+
+      75% {
+        transform: translateX(7px)
+      }
+    }
+
+    /* ---------- kuis ---------- */
+    .opt {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: var(--deep);
+      border: 1.5px solid var(--line);
+      color: var(--paper);
+      border-radius: 13px;
+      padding: 13px 16px;
+      font-size: .95rem;
+      transition: .16s;
+      margin-bottom: 9px
+    }
+
+    .opt:hover:not([disabled]) {
+      border-color: var(--io);
+      transform: translateX(4px)
+    }
+
+    .opt.right {
+      border-color: var(--terminator);
+      background: rgba(6, 214, 160, .14)
+    }
+
+    .opt.wrong {
+      border-color: var(--keputusan);
+      background: rgba(239, 71, 111, .14)
+    }
+
+    .opt[disabled] {
+      cursor: default
+    }
+
+    .score {
+      font-family: "Baloo 2", sans-serif;
+      font-size: 3.2rem;
+      font-weight: 800;
+      color: var(--io);
+      line-height: 1
+    }
+
+    /* ---------- lain-lain ---------- */
+    .step {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 14px;
+      align-items: flex-start
+    }
+
+    .step .no {
+      flex: 0 0 30px;
+      height: 30px;
+      border-radius: 9px;
+      background: var(--io);
+      color: #231B00;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: .9rem;
+      font-family: "Baloo 2", sans-serif
+    }
+
+    .step p {
+      margin: 0;
+      font-size: .95rem
+    }
+
+    .link {
+      display: inline-block;
+      background: var(--io);
+      color: #231B00;
+      font-weight: 800;
+      text-decoration: none;
+      border-radius: 99px;
+      padding: 13px 24px;
+      transition: .16s
+    }
+
+    .link:hover {
+      background: #ffdd8c;
+      transform: translateY(-2px)
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .88rem
+    }
+
+    th,
+    td {
+      border: 1px solid var(--line);
+      padding: 9px 11px;
+      text-align: left
+    }
+
+    th {
+      background: var(--panel);
+      font-weight: 700
+    }
+
+    .note {
+      font-size: .85rem;
+      color: var(--dim)
+    }
+
+    .quo {
+      border-left: 3px solid var(--io);
+      padding: 4px 0 4px 16px;
+      color: var(--paper);
+      font-size: 1.02rem
+    }
+
+    .feedback {
+      min-height: 26px;
+      font-weight: 700;
+      font-size: .92rem;
+      margin-top: 12px
+    }
+
+    .ok {
+      color: var(--terminator)
+    }
+
+    .no {
+      color: var(--keputusan)
+    }
+
+    :focus-visible {
+      outline: 3px solid var(--io);
+      outline-offset: 3px;
+      border-radius: 8px
+    }
+
+    /* ---------- LAB FLOWCHART ---------- */
+    .slide.wide {
+      max-width: 1180px
+    }
+
+    .inp {
+      width: 100%;
+      background: #120F2C;
+      border: 1.5px solid var(--line);
+      color: var(--paper);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font: 500 .92rem "JetBrains Mono", ui-monospace, monospace
+    }
+
+    .inp:focus {
+      border-color: var(--io);
+      outline: none
+    }
+
+    select.inp {
+      font-family: "Plus Jakarta Sans", sans-serif;
+      width: auto;
+      cursor: pointer
+    }
+
+    .lfield {
+      display: block;
+      margin-bottom: 12px
+    }
+
+    .lfield span {
+      display: block;
+      font-size: .8rem;
+      font-weight: 700;
+      color: var(--dim);
+      margin-bottom: 5px
+    }
+
+    .labmeta {
+      margin-bottom: 14px
+    }
+
+    .lab {
+      display: grid;
+      gap: 16px
+    }
+
+    @media(min-width:900px) {
+      .lab {
+        grid-template-columns: minmax(0, 1.45fr) minmax(310px, 1fr);
+        align-items: start
+      }
+    }
+
+    .lab-canvas {
+      background: #120F2C;
+      border: 1.5px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px 14px 26px;
+      overflow-x: auto;
+      min-height: 380px
+    }
+
+    .lhead {
+      text-align: center;
+      margin-bottom: 16px;
+      border-bottom: 1px dashed var(--line);
+      padding-bottom: 12px
+    }
+
+    .lhead strong {
+      display: block;
+      font-family: "Baloo 2", sans-serif;
+      font-size: 1.15rem
+    }
+
+    .lflow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: min-content;
+      padding: 0 8px
+    }
+
+    .lnode {
+      position: relative;
+      isolation: isolate;
+      min-width: 150px;
+      max-width: 280px;
+      padding: 10px 22px;
+      text-align: center;
+      font: 700 .85rem/1.35 "JetBrains Mono", ui-monospace, monospace;
+      background: none;
+      border: 0;
+      cursor: pointer;
+      word-break: break-word;
+      transition: transform .2s, filter .2s
+    }
+
+    .lnode::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: var(--deep);
+      border: 2px solid currentColor
+    }
+
+    .l-term {
+      color: var(--terminator);
+      cursor: default
+    }
+
+    .l-term::before {
+      border-radius: 99px
+    }
+
+    .l-io {
+      color: var(--io)
+    }
+
+    .l-io::before {
+      transform: skewX(-16deg);
+      border-radius: 3px
+    }
+
+    .l-pro {
+      color: var(--proses)
+    }
+
+    .l-pro::before {
+      border-radius: 5px
+    }
+
+    .l-dec {
+      color: var(--keputusan);
+      padding: 12px 34px
+    }
+
+    .l-dec::before {
+      border: 0;
+      background: var(--keputusan);
+      clip-path: polygon(16px 0, calc(100% - 16px) 0, 100% 50%, calc(100% - 16px) 100%, 16px 100%, 0 50%)
+    }
+
+    .l-dec::after {
+      content: "";
+      position: absolute;
+      inset: 2px;
+      z-index: -1;
+      background: var(--deep);
+      clip-path: polygon(15px 0, calc(100% - 15px) 0, 100% 50%, calc(100% - 15px) 100%, 15px 100%, 0 50%)
+    }
+
+    .lnode.sel {
+      filter: drop-shadow(0 0 7px currentColor)
+    }
+
+    .lnode.sel::before {
+      background: #2E2670
+    }
+
+    .lnode.run {
+      transform: scale(1.08);
+      filter: drop-shadow(0 0 12px currentColor)
+    }
+
+    .lnode.run::before {
+      background: #3A3190
+    }
+
+    .ladd {
+      display: flex;
+      flex-direction: column;
+      align-items: center
+    }
+
+    .ln {
+      width: 2px;
+      height: 12px;
+      background: var(--line);
+      flex: 0 0 auto
+    }
+
+    .ln.arr {
+      position: relative;
+      height: 14px
+    }
+
+    .ln.arr::after {
+      content: "";
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: var(--line)
+    }
+
+    .lplus {
+      width: 26px;
+      height: 26px;
+      border-radius: 99px;
+      background: var(--panel);
+      border: 1.5px solid var(--line);
+      color: var(--dim);
+      font-weight: 800;
+      font-size: 1rem;
+      line-height: 1;
+      padding: 0;
+      transition: .15s
+    }
+
+    .lplus:hover {
+      border-color: var(--io);
+      color: var(--io);
+      transform: scale(1.12)
+    }
+
+    .lmenu {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 8px;
+      background: var(--panel);
+      border: 1.5px solid var(--io);
+      border-radius: 12px;
+      max-width: 290px
+    }
+
+    .lm {
+      border-radius: 9px;
+      padding: 7px 11px;
+      font-weight: 700;
+      font-size: .8rem;
+      background: var(--deep);
+      border: 1.5px solid;
+      color: var(--paper)
+    }
+
+    .lm-input,
+    .lm-output {
+      border-color: var(--io)
+    }
+
+    .lm-assign {
+      border-color: var(--proses)
+    }
+
+    .lm-if {
+      border-color: var(--keputusan)
+    }
+
+    .lm-x {
+      border-color: var(--line);
+      color: var(--dim)
+    }
+
+    .lif {
+      display: flex;
+      flex-direction: column;
+      align-items: center
+    }
+
+    .lbr {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(150px, 1fr));
+      column-gap: 18px
+    }
+
+    .lcol {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative
+    }
+
+    .lcol::before,
+    .lcol::after {
+      content: "";
+      position: absolute;
+      height: 2px;
+      background: var(--line)
+    }
+
+    .lcol::before {
+      top: 0
+    }
+
+    .lcol::after {
+      bottom: 0
+    }
+
+    .lcol:first-child::before,
+    .lcol:first-child::after {
+      left: 50%;
+      right: -10px
+    }
+
+    .lcol:last-child::before,
+    .lcol:last-child::after {
+      left: -10px;
+      right: 50%
+    }
+
+    .ltag {
+      font-size: .72rem;
+      font-weight: 800;
+      padding: 1px 8px;
+      border-radius: 99px;
+      background: var(--panel)
+    }
+
+    .lgrow {
+      flex: 1 1 auto;
+      width: 2px;
+      min-height: 10px;
+      background: var(--line)
+    }
+
+    .lside {
+      display: flex;
+      flex-direction: column;
+      gap: 12px
+    }
+
+    .ltools {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center
+    }
+
+    .ltools .nav {
+      padding: 10px 16px;
+      font-size: .9rem
+    }
+
+    .lab-term {
+      min-height: 150px;
+      max-height: 280px;
+      overflow-y: auto
+    }
+
+    .lab-term .dim {
+      color: #7E78B8
+    }
+
+    .lab-term .err {
+      color: #FF8FA8
+    }
+
+    .lab-term .okl {
+      color: var(--terminator)
+    }
+
+    .lab-term .inl {
+      color: var(--io)
+    }
+
+    .lask {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin: 8px 0;
+      color: var(--io)
+    }
+
+    .lask .inp {
+      flex: 1 1 120px;
+      width: auto;
+      padding: 8px 10px
+    }
+
+    .lask .nav {
+      padding: 8px 14px
+    }
+
+    .lwatch table td:last-child {
+      font-family: "JetBrains Mono", monospace;
+      color: var(--io)
+    }
+
+    .cheat {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 4px 14px;
+      font-size: .84rem
+    }
+
+    .cheat code {
+      color: var(--io)
+    }
+
+    .where>div {
+      background: var(--panel);
+      border: 1.5px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column
+    }
+
+    .where p {
+      font-size: .9rem;
+      flex: 1
+    }
+
+    .where .nav,
+    .where .link {
+      align-self: flex-start;
+      text-align: center
+    }
+
+    .link.sm {
+      padding: 10px 18px;
+      font-size: .9rem
+    }
+
+    .link.ghost {
+      background: var(--deep);
+      color: var(--paper);
+      border: 1.5px solid var(--line)
+    }
+
+    .link.ghost:hover {
+      background: var(--line)
+    }
+
+    @media (prefers-reduced-motion:reduce) {
+      * {
+        animation-duration: .001ms !important;
+        transition-duration: .001ms !important
+      }
+    }
+
+    @media(max-width:520px) {
+      .sym {
+        height: 200px
+      }
+
+      .bar-in {
+        gap: 7px
+      }
+
+      .nav {
+        padding: 11px 15px;
+        font-size: .92rem
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="rail"><i id="rail"></i></div>
+
+  <main class="stage">
+
+    <!-- ====== 1. SAMPUL ====== -->
+    <section class="slide on" id="s0">
+      <div class="badge">Koding &amp; Kecerdasan Artifisial · Fase E</div>
+      <h1>Petualangan<br>Flowchart</h1>
+      <p style="font-size:1.08rem;color:var(--dim);max-width:34ch">Belajar merancang alur berpikir komputer, dari simbol
+        pertama sampai program yang benar-benar berjalan.</p>
+
+      <div class="hero-flow">
+        <svg viewBox="0 0 300 250" role="img" aria-label="Animasi flowchart sederhana">
+          <g stroke-width="2.5" fill="none">
+            <line class="draw" style="--len:26;animation-delay:.35s" x1="150" y1="42" x2="150" y2="64"
+              stroke="#5B52A8" />
+            <line class="draw" style="--len:26;animation-delay:.75s" x1="150" y1="104" x2="150" y2="126"
+              stroke="#5B52A8" />
+            <line class="draw" style="--len:26;animation-delay:1.15s" x1="150" y1="166" x2="150" y2="188"
+              stroke="#5B52A8" />
+          </g>
+          <g fill="#5B52A8">
+            <path class="pop" style="animation-delay:.55s" d="M144 62 L156 62 L150 70 Z" />
+            <path class="pop" style="animation-delay:.95s" d="M144 124 L156 124 L150 132 Z" />
+            <path class="pop" style="animation-delay:1.35s" d="M144 186 L156 186 L150 194 Z" />
+          </g>
+          <g class="pop" style="animation-delay:.1s">
+            <rect x="88" y="12" width="124" height="32" rx="16" fill="none" stroke="#06D6A0" stroke-width="2.5" />
+            <text x="150" y="33" text-anchor="middle" fill="#06D6A0" font-family="Baloo 2,sans-serif" font-weight="700"
+              font-size="15">MULAI</text>
+          </g>
+          <g class="pop" style="animation-delay:.6s">
+            <path d="M74 70 L214 70 L200 100 L60 100 Z" fill="none" stroke="#FFD166" stroke-width="2.5" />
+            <text x="137" y="90" text-anchor="middle" fill="#FFD166" font-family="Baloo 2,sans-serif" font-weight="700"
+              font-size="14">INPUT data</text>
+          </g>
+          <g class="pop" style="animation-delay:1s">
+            <rect x="76" y="132" width="148" height="32" rx="5" fill="none" stroke="#8A9BFF" stroke-width="2.5" />
+            <text x="150" y="153" text-anchor="middle" fill="#8A9BFF" font-family="Baloo 2,sans-serif" font-weight="700"
+              font-size="14">olah data</text>
+          </g>
+          <g class="pop" style="animation-delay:1.4s">
+            <rect x="88" y="194" width="124" height="32" rx="16" fill="none" stroke="#06D6A0" stroke-width="2.5" />
+            <text x="150" y="215" text-anchor="middle" fill="#06D6A0" font-family="Baloo 2,sans-serif" font-weight="700"
+              font-size="15">SELESAI</text>
+          </g>
+        </svg>
+      </div>
+
+      <p class="note">Gunakan tombol panah keyboard, geser layar, atau tombol di bawah untuk berpindah slide.</p>
+    </section>
+
+    <!-- ====== 2. TUJUAN ====== -->
+    <section class="slide" id="s1">
+      <div class="kicker">Slide <b>2</b> · Sasaran belajar</div>
+      <h2>Setelah pelajaran ini, kamu bisa apa?</h2>
+      <p>Ketuk setiap target untuk menandainya. Cek lagi di akhir pelajaran — semuanya harus tercentang.</p>
+      <div class="grid" id="aims"></div>
+    </section>
+
+    <!-- ====== 3. ALGORITMA ====== -->
+    <section class="slide" id="s2">
+      <div class="kicker">Slide <b>3</b> · Dasar pemikiran</div>
+      <h2>Komputer tidak bisa menebak</h2>
+      <p class="quo">Algoritma adalah urutan langkah yang logis dan berurutan untuk menyelesaikan sebuah masalah.
+        Manusia bisa mengira-ngira maksud kita, komputer tidak.</p>
+      <div class="grid g3" style="margin:18px 0">
+        <div class="card">
+          <h3 style="color:var(--terminator)">Jelas</h3>
+          <p style="font-size:.92rem;margin:0">Setiap langkah hanya punya satu makna, tidak bisa ditafsirkan berbeda.
+          </p>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--io)">Berurutan</h3>
+          <p style="font-size:.92rem;margin:0">Langkah yang tertukar menghasilkan jawaban yang salah.</p>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--proses)">Berujung</h3>
+          <p style="font-size:.92rem;margin:0">Punya titik mulai dan titik selesai yang pasti.</p>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Coba dulu: susun langkah membuat mi instan</h3>
+        <p class="note" style="margin-bottom:14px">Ketuk kartu sesuai urutan yang benar, dari langkah pertama sampai
+          terakhir.</p>
+        <div class="pool" id="mie-pool"></div>
+        <div id="mie-out" style="margin-top:16px"></div>
+        <div class="feedback" id="mie-fb"></div>
+      </div>
+    </section>
+
+    <!-- ====== 4. FUNGSI FLOWCHART ====== -->
+    <section class="slide" id="s3">
+      <div class="kicker">Slide <b>4</b> · Pengertian</div>
+      <h2>Flowchart: bahasa gambar seorang programmer</h2>
+      <p>Flowchart atau diagram alir adalah gambaran urutan langkah penyelesaian masalah menggunakan simbol-simbol baku
+        yang dihubungkan garis berpanah. Satu simbol mewakili satu jenis kegiatan.</p>
+      <div class="grid g2" style="margin-top:8px">
+        <div class="card">
+          <h3 style="color:var(--io)">Mudah dibaca siapa pun</h3>
+          <p style="margin:0;font-size:.94rem">Gambar lebih cepat dipahami daripada paragraf panjang, bahkan oleh orang
+            yang belum bisa membuat kode program.</p>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--terminator)">Menangkap kesalahan lebih awal</h3>
+          <p style="margin:0;font-size:.94rem">Kesalahan logika terlihat saat masih berupa gambar, jauh sebelum
+            programnya ditulis dan dijalankan.</p>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--proses)">Jadi dokumentasi</h3>
+          <p style="margin:0;font-size:.94rem">Saat program perlu diperbaiki tahun depan, flowchart membantu mengingat
+            kembali cara kerjanya.</p>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--keputusan)">Alat komunikasi tim</h3>
+          <p style="margin:0;font-size:.94rem">Perancang, pemrogram, dan pengguna bisa berdiskusi di atas satu gambar
+            yang sama.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== 5. SIMBOL ====== -->
+    <section class="slide" id="s4">
+      <div class="kicker">Slide <b>5</b> · Kamus simbol</div>
+      <h2>Kenali simbolnya</h2>
+      <p>Ketuk setiap kartu untuk membalik dan melihat fungsinya. Warna di sini punya arti: hijau untuk batas program,
+        kuning untuk data keluar-masuk, biru untuk pengolahan, merah untuk pilihan.</p>
+      <div class="grid g3" id="syms" style="margin-top:6px"></div>
+    </section>
+
+    <!-- ====== 6. ATURAN ====== -->
+    <section class="slide" id="s5">
+      <div class="kicker">Slide <b>6</b> · Rambu-rambu</div>
+      <h2>Lima aturan yang wajib dipatuhi</h2>
+      <div style="margin-top:18px">
+        <div class="step">
+          <div class="no">1</div>
+          <p>Flowchart digambar dari atas ke bawah dan dari kiri ke kanan.</p>
+        </div>
+        <div class="step">
+          <div class="no">2</div>
+          <p>Selalu diawali simbol MULAI dan diakhiri simbol SELESAI. Tanpa keduanya, flowchart dianggap belum selesai.
+          </p>
+        </div>
+        <div class="step">
+          <div class="no">3</div>
+          <p>Tulis kata kerja yang singkat dan jelas di dalam simbol, misalnya "INPUT nilai", bukan "di sini datanya
+            dimasukkan dulu".</p>
+        </div>
+        <div class="step">
+          <div class="no">4</div>
+          <p>Setiap simbol punya satu garis masuk dan satu garis keluar. Pengecualiannya simbol keputusan, yang punya
+            dua garis keluar: ya dan tidak.</p>
+        </div>
+        <div class="step">
+          <div class="no">5</div>
+          <p>Hindari garis alir yang saling berpotongan. Bila terpaksa, gunakan simbol konektor.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== 7. CONTOH + PELACAK ====== -->
+    <section class="slide" id="s6">
+      <div class="kicker">Slide <b>7</b> · Contoh terpandu</div>
+      <h2>Menghitung luas segitiga</h2>
+      <p>Tekan "Jalankan" untuk menelusuri alurnya langkah demi langkah, persis seperti cara komputer membacanya. Data
+        uji: alas = 10, tinggi = 6.</p>
+      <div class="grid g2" style="align-items:start">
+        <div class="flow-col" id="trace"></div>
+        <div>
+          <div class="term-out" id="term">Tekan Jalankan untuk memulai.</div>
+          <div style="display:flex;gap:9px;margin-top:12px;flex-wrap:wrap">
+            <button class="nav key" id="run">Jalankan</button>
+            <button class="nav" id="reset">Ulangi</button>
+          </div>
+          <p class="note" style="margin-top:14px">Tanda panah ke kiri (&larr;) berarti "isikan nilai ke dalam variabel",
+            bukan tanda sama dengan.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== 8. LATIHAN SUSUN ====== -->
+    <section class="slide" id="s7">
+      <div class="kicker">Slide <b>8</b> · Latihan</div>
+      <h2>Susun alurnya sendiri</h2>
+      <p>Masalah: menghitung keliling persegi. Ketuk kartu satu per satu sesuai urutan flowchart yang benar.</p>
+      <div class="card">
+        <div class="pool" id="kel-pool"></div>
+        <div id="kel-out" style="margin-top:18px"></div>
+        <div class="feedback" id="kel-fb"></div>
+      </div>
+    </section>
+
+    <!-- ====== 9. KUIS ====== -->
+    <section class="slide" id="s8">
+      <div class="kicker">Slide <b>9</b> · Uji pemahaman</div>
+      <h2>Kuis cepat</h2>
+      <div class="card" id="quiz-box">
+        <div class="note" id="q-count" style="margin-bottom:6px"></div>
+        <h3 id="q-text" style="margin-bottom:14px"></h3>
+        <div id="q-opts"></div>
+        <div class="feedback" id="q-fb"></div>
+        <button class="nav key" id="q-next" style="display:none;margin-top:12px">Lanjut</button>
+      </div>
+      <div class="card" id="quiz-done" style="display:none;text-align:center">
+        <div class="score" id="q-score"></div>
+        <h3 id="q-msg" style="margin-top:10px"></h3>
+        <p class="note" id="q-detail"></p>
+        <button class="nav" id="q-retry">Coba lagi</button>
+      </div>
+    </section>
+
+    <!-- ====== 10. UJIAN / PROYEK ====== -->
+    <section class="slide" id="s9">
+      <div class="kicker">Slide <b>10</b> · Tugas akhir</div>
+      <h2>Ujian praktik: bikin flowchart di Flowgorithm</h2>
+      <p>Rancang satu flowchart <strong>bertema bebas</strong>, lalu jalankan sampai hasilnya benar. Wajib memuat
+        terminator, input, proses, dan output.</p>
+
+      <div class="card" style="margin-bottom:16px">
+        <h3>Pilih tempat mengerjakan</h3>
+        <div class="grid g3 where" style="margin-top:10px">
+          <div>
+            <h3 style="color:var(--terminator)">Lab Flowchart</h3>
+            <p>Ada di dalam media ini. Bisa di HP maupun laptop, tanpa memasang aplikasi, dan flowchart-nya bisa
+              dijalankan.</p>
+            <button class="nav key" type="button" data-go="10">Buka Lab</button>
+          </div>
+          <div>
+            <h3 style="color:var(--io)">Flowgorithm</h3>
+            <p>Aplikasi resmi untuk laptop Windows di laboratorium komputer. Hasil disimpan sebagai berkas .fprg.</p>
+            <a class="link sm ghost" href="http://www.flowgorithm.org/download/" target="_blank" rel="noopener">Unduh
+              Flowgorithm</a>
+          </div>
+          <div>
+            <h3 style="color:var(--proses)">FlowDiX Web</h3>
+            <p>Alternatif mirip Flowgorithm yang berjalan di peramban dan bisa membuka berkas .fprg. Butuh internet.</p>
+            <a class="link sm ghost" href="https://flowdix.altervista.org/" target="_blank" rel="noopener">Buka
+              FlowDiX</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <h3>Langkah pengerjaan di Lab Flowchart</h3>
+        <div class="step">
+          <div class="no">1</div>
+          <p>Isi nama kelompok dan tema flowchart di bagian atas Lab.</p>
+        </div>
+        <div class="step">
+          <div class="no">2</div>
+          <p>Ketuk tombol <strong>+</strong> di antara MULAI dan SELESAI, lalu pilih simbol: Input, Proses, Output, atau
+            Keputusan.</p>
+        </div>
+        <div class="step">
+          <div class="no">3</div>
+          <p>Ketuk simbol yang sudah ditambahkan untuk mengisi nama variabel atau rumusnya.</p>
+        </div>
+        <div class="step">
+          <div class="no">4</div>
+          <p>Tekan <strong>Jalankan</strong>. Saat simbol Input menyala, ketik datamu di jendela keluaran dan tekan
+            Kirim.</p>
+        </div>
+        <div class="step">
+          <div class="no">5</div>
+          <p>Setelah hasilnya benar, ambil tangkapan layar kanvas beserta jendela keluarannya, lalu kumpulkan ke guru.
+          </p>
+        </div>
+        <p class="note" style="margin:6px 0 0">Mengerjakan di Flowgorithm desktop? Buat dulu simbol <span
+            class="mono">Declare</span> untuk setiap variabel sebelum simbol Input, lalu tekan Run (segitiga hijau) dan
+          simpan berkas .fprg.</p>
+      </div>
+
+      <div class="card">
+        <h3>Contoh jadi: menghitung uang kembalian di kantin</h3>
+        <p class="note">Gunakan contoh ini sebagai acuan, tetapi temanya jangan disalin.</p>
+        <div class="flow-col" id="ex-flow" style="margin:16px 0"></div>
+        <table>
+          <tr>
+            <th style="width:34%">Simbol Flowgorithm</th>
+            <th>Isian</th>
+          </tr>
+          <tr>
+            <td class="mono">Declare</td>
+            <td class="mono">harga_barang, jumlah_beli, uang_bayar, total, kembalian (Integer) <span class="note">—
+                khusus Flowgorithm desktop</span></td>
+          </tr>
+          <tr>
+            <td class="mono">Input</td>
+            <td class="mono">harga_barang, jumlah_beli, uang_bayar</td>
+          </tr>
+          <tr>
+            <td class="mono">Assign</td>
+            <td class="mono">total = harga_barang * jumlah_beli</td>
+          </tr>
+          <tr>
+            <td class="mono">Assign</td>
+            <td class="mono">kembalian = uang_bayar - total</td>
+          </tr>
+          <tr>
+            <td class="mono">Output</td>
+            <td class="mono">"Total belanja: " &amp; total</td>
+          </tr>
+          <tr>
+            <td class="mono">Output</td>
+            <td class="mono">"Kembalian: " &amp; kembalian</td>
+          </tr>
+        </table>
+        <p class="note" style="margin-top:12px">Data uji 5000, 3, dan 20000 harus menghasilkan Total belanja 15000 dan
+          Kembalian 5000.</p>
+        <button class="nav key" type="button" id="try-ex">Coba jalankan contoh ini di Lab</button>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <h3>Penilaian karyamu</h3>
+        <table>
+          <tr>
+            <th>Aspek</th>
+            <th style="width:22%">Bobot</th>
+          </tr>
+          <tr>
+            <td>Ketepatan pemilihan simbol</td>
+            <td>25</td>
+          </tr>
+          <tr>
+            <td>Kelengkapan alur (mulai, input, proses, output, selesai)</td>
+            <td>25</td>
+          </tr>
+          <tr>
+            <td>Program berjalan dan hasilnya benar</td>
+            <td>30</td>
+          </tr>
+          <tr>
+            <td>Kreativitas tema dan penjelasan saat presentasi</td>
+            <td>20</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <h3>Ide tema kalau sedang buntu</h3>
+        <p style="margin:0;font-size:.94rem">Menghitung nilai rata-rata ulangan, harga barang setelah diskon, konversi
+          suhu Celsius ke Fahrenheit, uang tabungan mingguan, luas dan keliling lapangan sekolah, atau lama perjalanan
+          berdasarkan jarak dan kecepatan.</p>
+      </div>
+    </section>
+
+    <!-- ====== 11. LAB FLOWCHART ====== -->
+    <section class="slide wide" id="s-lab">
+      <div class="kicker">Slide <b>11</b> · Ruang praktik</div>
+      <h2>Lab Flowchart</h2>
+      <p>Susun flowchart ujianmu di sini, lalu jalankan dan lihat komputer mengikuti alurmu. Pekerjaanmu tersimpan
+        otomatis di perangkat ini, jadi aman kalau halaman tertutup.</p>
+
+      <div class="grid g2 labmeta">
+        <label class="lfield"><span>Nama / kelompok</span><input class="inp" id="lab-name"
+            placeholder="Contoh: Kelompok 3, Kelas 10 PPLG" autocomplete="off"></label>
+        <label class="lfield"><span>Tema flowchart</span><input class="inp" id="lab-theme"
+            placeholder="Contoh: Menghitung harga setelah diskon" autocomplete="off"></label>
+      </div>
+
+      <div class="lab">
+        <div class="lab-canvas">
+          <div class="lhead"><strong id="lab-title"></strong><span class="note" id="lab-by"></span></div>
+          <div id="lab-flow"></div>
+        </div>
+
+        <div class="lside">
+          <div class="card" id="lab-panel"></div>
+          <div class="ltools">
+            <button class="nav key" type="button" id="lab-run">Jalankan</button>
+            <button class="nav" type="button" id="lab-stop" disabled>Berhenti</button>
+            <select class="inp" id="lab-speed" aria-label="Kecepatan eksekusi">
+              <option value="1200">Lambat</option>
+              <option value="650" selected>Normal</option>
+              <option value="220">Cepat</option>
+            </select>
+          </div>
+          <div class="term-out lab-term" id="lab-term" aria-live="polite">Tekan Jalankan untuk menguji flowchart-mu.
+          </div>
+          <div class="card lwatch">
+            <h3>Isi variabel</h3>
+            <div id="lab-watch"></div>
+          </div>
+          <div class="ltools">
+            <button class="nav" type="button" id="lab-ex">Muat contoh</button>
+            <button class="nav" type="button" id="lab-pc">Lihat pseudocode</button>
+            <button class="nav" type="button" id="lab-clear">Kosongkan</button>
+          </div>
+          <pre class="term-out" id="lab-pseudo" hidden></pre>
+          <div class="card">
+            <h3>Cara menulis rumus</h3>
+            <div class="cheat">
+              <code>+ - * /</code><span>tambah, kurang, kali, bagi</span>
+              <code>mod</code><span>sisa bagi, contoh <code>angka mod 2</code></span>
+              <code>( )</code><span>kerjakan bagian ini lebih dulu</span>
+              <code>"teks"</code><span>teks ditulis di dalam tanda kutip</span>
+              <code>&amp;</code><span>gabungkan teks dan nilai, contoh <code>"Luas: " &amp; luas</code></span>
+              <code>== &lt;&gt;</code><span>sama dengan, tidak sama dengan</span>
+              <code>&gt; &lt; &gt;= &lt;=</code><span>lebih besar, lebih kecil</span>
+              <code>and or</code><span>gabungkan dua kondisi</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== 12. PENUTUP ====== -->
+    <section class="slide" id="s11">
+      <div class="kicker">Slide <b>12</b> · Penutup</div>
+      <h2>Sudah sampai garis SELESAI</h2>
+      <p>Kamu sekarang tahu cara menerjemahkan sebuah ide menjadi alur yang bisa dibaca mesin. Kemampuan ini adalah
+        pintu masuk menuju pemrograman dan kecerdasan artifisial.</p>
+      <div class="card" style="margin:18px 0">
+        <h3>Refleksi sebelum pulang</h3>
+        <p style="margin:0 0 8px;font-size:.95rem">Bagian mana yang paling mudah dan paling sulit kamu pahami?</p>
+        <p style="margin:0 0 8px;font-size:.95rem">Sudahkah kamu bisa membuat flowchart sendiri tanpa dibantu teman?</p>
+        <p style="margin:0;font-size:.95rem">Apa satu hal yang akan kamu coba buat di Flowgorithm setelah kelas ini?</p>
+      </div>
+      <div class="card">
+        <h3 style="color:var(--io)">Pertemuan berikutnya</h3>
+        <p style="margin:0;font-size:.95rem">Flowchart percabangan dan perulangan: bagaimana komputer memilih jalan dan
+          mengulang pekerjaan. Siapkan simbol belah ketupatmu.</p>
+      </div>
+      <p class="note" style="margin-top:20px">Media ajar Koding dan Kecerdasan Artifisial · Materi Algoritma Pemrograman
+        · Fase E</p>
+    </section>
+
+  </main>
+
+  <nav class="bar">
+    <div class="bar-in">
+      <button class="nav" id="prev">Kembali</button>
+      <div class="dots" id="dots"></div>
+      <button class="nav key" id="next">Lanjut</button>
+    </div>
+  </nav>
+
+  <script>
+    (function () {
+      "use strict";
+
+      /* ================= NAVIGASI SLIDE ================= */
+      var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+      var i = 0;
+      var dots = document.getElementById('dots');
+      var rail = document.getElementById('rail');
+      var prev = document.getElementById('prev');
+      var next = document.getElementById('next');
+
+      slides.forEach(function (s, n) {
+        var d = document.createElement('button');
+        d.className = 'dot';
+        d.type = 'button';
+        d.setAttribute('aria-label', 'Slide ' + (n + 1));
+        d.addEventListener('click', function () { go(n); });
+        dots.appendChild(d);
+      });
+
+      function go(n) {
+        if (n < 0 || n >= slides.length) return;
+        slides[i].classList.remove('on');
+        i = n;
+        slides[i].classList.add('on');
+        Array.prototype.forEach.call(dots.children, function (d, k) { d.classList.toggle('on', k === i); });
+        rail.style.width = ((i + 1) / slides.length * 100) + '%';
+        prev.disabled = i === 0;
+        next.textContent = i === slides.length - 1 ? 'Selesai' : 'Lanjut';
+        next.disabled = i === slides.length - 1;
+        window.scrollTo(0, 0);
+      }
+      prev.addEventListener('click', function () { go(i - 1); });
+      next.addEventListener('click', function () { go(i + 1); });
+      document.addEventListener('keydown', function (e) {
+        var tg = e.target && e.target.tagName;
+        if (tg === 'INPUT' || tg === 'SELECT' || tg === 'TEXTAREA') return;
+        if (e.key === 'ArrowRight' || e.key === 'PageDown') go(i + 1);
+        if (e.key === 'ArrowLeft' || e.key === 'PageUp') go(i - 1);
+      });
+      var tx = 0, ty = 0;
+      var swipeOk = true;
+      document.addEventListener('touchstart', function (e) { swipeOk = !(e.target.closest && e.target.closest('.lab-canvas, .lab-term, input')); tx = e.changedTouches[0].clientX; ty = e.changedTouches[0].clientY; }, { passive: true });
+      document.addEventListener('touchend', function (e) {
+        var dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty;
+        if (swipeOk && Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.6) go(dx < 0 ? i + 1 : i - 1);
+      }, { passive: true });
+
+      /* ================= TUJUAN ================= */
+      var aims = [
+        'Menjelaskan pengertian dan fungsi flowchart',
+        'Mengenali 8 simbol flowchart beserta fungsinya',
+        'Menelusuri alur flowchart dan menentukan hasilnya',
+        'Merancang flowchart sendiri di Flowgorithm Online',
+        'Menjelaskan alur karyaku kepada teman sekelas'
+      ];
+      var aimBox = document.getElementById('aims');
+      aims.forEach(function (t) {
+        var b = document.createElement('button');
+        b.className = 'aim';
+        b.type = 'button';
+        b.innerHTML = '<span class="tick">&#10003;</span><span>' + t + '</span>';
+        b.addEventListener('click', function () { b.classList.toggle('done'); });
+        aimBox.appendChild(b);
+      });
+
+      /* ================= KARTU SIMBOL ================= */
+      var S = {
+        term: '<svg viewBox="0 0 120 50"><rect x="4" y="6" width="112" height="38" rx="19" fill="none" stroke="#06D6A0" stroke-width="3"/></svg>',
+        io: '<svg viewBox="0 0 120 50"><path d="M26 8 H116 L94 42 H4 Z" fill="none" stroke="#FFD166" stroke-width="3"/></svg>',
+        pro: '<svg viewBox="0 0 120 50"><rect x="6" y="8" width="108" height="34" rx="4" fill="none" stroke="#8A9BFF" stroke-width="3"/></svg>',
+        dec: '<svg viewBox="0 0 120 50"><path d="M60 5 L114 25 L60 45 L6 25 Z" fill="none" stroke="#EF476F" stroke-width="3"/></svg>',
+        line: '<svg viewBox="0 0 120 50"><line x1="60" y1="6" x2="60" y2="36" stroke="#B3AEE0" stroke-width="3"/><path d="M52 34 L60 46 L68 34 Z" fill="#B3AEE0"/></svg>',
+        conn: '<svg viewBox="0 0 120 50"><circle cx="60" cy="25" r="17" fill="none" stroke="#B3AEE0" stroke-width="3"/></svg>',
+        prep: '<svg viewBox="0 0 120 50"><path d="M26 8 H94 L114 25 L94 42 H26 L6 25 Z" fill="none" stroke="#8A9BFF" stroke-width="3"/></svg>',
+        doc: '<svg viewBox="0 0 120 50"><path d="M8 8 H112 V36 Q86 48 60 38 Q34 28 8 38 Z" fill="none" stroke="#FFD166" stroke-width="3"/></svg>'
+      };
+      var symbols = [
+        ['Terminator', S.term, 'Menandai awal (MULAI) dan akhir (SELESAI) program. Setiap flowchart wajib punya keduanya.'],
+        ['Input / Output', S.io, 'Memasukkan data dari pengguna atau menampilkan hasil ke layar.'],
+        ['Proses', S.pro, 'Mengolah data: menghitung, mengisi nilai variabel, atau mengubah isi data.'],
+        ['Keputusan', S.dec, 'Memeriksa kondisi dengan dua kemungkinan jawaban: ya atau tidak.'],
+        ['Garis Alir', S.line, 'Menghubungkan antar simbol dan menunjukkan arah jalannya proses.'],
+        ['Konektor', S.conn, 'Menyambung potongan flowchart pada halaman yang sama agar garis tidak berpotongan.'],
+        ['Preparation', S.prep, 'Memberi nilai awal atau menyatakan proses perulangan (looping).'],
+        ['Dokumen', S.doc, 'Menyatakan keluaran yang dicetak menjadi dokumen atau laporan.']
+      ];
+      var symBox = document.getElementById('syms');
+      symbols.forEach(function (s) {
+        var b = document.createElement('button');
+        b.className = 'sym';
+        b.type = 'button';
+        b.innerHTML = '<div class="sym-in">' +
+          '<div class="sym-f">' + s[1] + '<div class="sym-name">' + s[0] + '</div><div class="sym-hint">ketuk untuk membalik</div></div>' +
+          '<div class="sym-b"><div class="tag">' + s[0] + '</div><p>' + s[2] + '</p></div></div>';
+        b.addEventListener('click', function () { b.classList.toggle('flip'); });
+        symBox.appendChild(b);
+      });
+
+      /* ================= PEMBANTU NODE ================= */
+      function nodeEl(text, kind) {
+        var d = document.createElement('div');
+        d.className = 'node n-' + kind;
+        d.textContent = text;
+        return d;
+      }
+      function arrowEl() {
+        var a = document.createElement('div');
+        a.className = 'arrow';
+        return a;
+      }
+      function buildFlow(host, list, dim) {
+        host.innerHTML = '';
+        list.forEach(function (n, k) {
+          if (k) host.appendChild(arrowEl());
+          var el = nodeEl(n[0], n[1]);
+          if (!dim) el.style.opacity = 1;
+          host.appendChild(el);
+        });
+      }
+
+      /* ================= PELACAK LUAS SEGITIGA ================= */
+      var traceSteps = [
+        ['MULAI', 'term', 'Program dimulai.'],
+        ['INPUT alas, tinggi', 'io', 'Pengguna mengetik: alas = 10, tinggi = 6'],
+        ['luas \u2190 0.5 \u00D7 alas \u00D7 tinggi', 'pro', 'Hitung: 0.5 \u00D7 10 \u00D7 6 = 30  →  luas = 30'],
+        ['OUTPUT luas', 'io', 'Layar menampilkan: Luas segitiga = 30'],
+        ['SELESAI', 'term', 'Program berhenti.']
+      ];
+      var traceHost = document.getElementById('trace');
+      var term = document.getElementById('term');
+      buildFlow(traceHost, traceSteps, true);
+      var traceNodes = function () { return traceHost.querySelectorAll('.node'); };
+      var timer = null;
+
+      function runTrace() {
+        stopTrace();
+        term.textContent = '> menjalankan program...';
+        var k = 0;
+        var nodes = traceNodes();
+        Array.prototype.forEach.call(nodes, function (n) { n.classList.remove('live', 'pass'); });
+        timer = setInterval(function () {
+          if (k > 0) { nodes[k - 1].classList.remove('live'); nodes[k - 1].classList.add('pass'); }
+          if (k >= traceSteps.length) {
+            clearInterval(timer); timer = null;
+            term.textContent += '\n\n> program selesai tanpa galat.';
+            return;
+          }
+          nodes[k].classList.add('live');
+          term.textContent += '\n' + (k + 1) + '. ' + traceSteps[k][2];
+          k++;
+        }, 1100);
+      }
+      function stopTrace() {
+        if (timer) { clearInterval(timer); timer = null; }
+      }
+      document.getElementById('run').addEventListener('click', runTrace);
+      document.getElementById('reset').addEventListener('click', function () {
+        stopTrace();
+        Array.prototype.forEach.call(traceNodes(), function (n) { n.classList.remove('live', 'pass'); });
+        term.textContent = 'Tekan Jalankan untuk memulai.';
+      });
+
+      /* ================= CONTOH FLOWCHART KEMBALIAN ================= */
+      buildFlow(document.getElementById('ex-flow'), [
+        ['MULAI', 'term'],
+        ['INPUT harga_barang, jumlah_beli, uang_bayar', 'io'],
+        ['total \u2190 harga_barang \u00D7 jumlah_beli', 'pro'],
+        ['kembalian \u2190 uang_bayar \u2212 total', 'pro'],
+        ['OUTPUT total dan kembalian', 'io'],
+        ['SELESAI', 'term']
+      ], false);
+
+      /* ================= PERMAINAN URUTAN ================= */
+      function orderGame(poolId, outId, fbId, items, okMsg) {
+        var pool = document.getElementById(poolId);
+        var out = document.getElementById(outId);
+        var fb = document.getElementById(fbId);
+        var placed = 0;
+        var order = items.map(function (x, n) { return n; });
+        for (var a = order.length - 1; a > 0; a--) {
+          var b = Math.floor(Math.random() * (a + 1));
+          var t = order[a]; order[a] = order[b]; order[b] = t;
+        }
+        pool.innerHTML = ''; out.innerHTML = ''; fb.textContent = '';
+        out.className = 'flow-col';
+
+        order.forEach(function (idx) {
+          var c = document.createElement('button');
+          c.className = 'chip';
+          c.type = 'button';
+          c.textContent = items[idx][0];
+          c.addEventListener('click', function () {
+            if (idx === placed) {
+              c.disabled = true;
+              if (placed) out.appendChild(arrowEl());
+              var n = nodeEl(items[idx][0], items[idx][1]);
+              n.style.opacity = 1;
+              out.appendChild(n);
+              placed++;
+              fb.className = 'feedback ok';
+              fb.textContent = placed === items.length ? okMsg : 'Benar. Lanjutkan ke langkah berikutnya.';
+            } else {
+              c.classList.remove('shake');
+              void c.offsetWidth;
+              c.classList.add('shake');
+              fb.className = 'feedback no';
+              fb.textContent = 'Belum tepat. Pikirkan lagi: apa yang harus dikerjakan komputer sebelum langkah itu?';
+            }
+          });
+          pool.appendChild(c);
+        });
+      }
+
+      orderGame('mie-pool', 'mie-out', 'mie-fb', [
+        ['Didihkan air', 'pro'],
+        ['Masukkan mi ke dalam air', 'pro'],
+        ['Tunggu 3 menit', 'pro'],
+        ['Tiriskan mi', 'pro'],
+        ['Campur dengan bumbu', 'pro'],
+        ['Sajikan', 'io']
+      ], 'Tepat sekali. Itulah sebuah algoritma: urutan langkah yang jelas dan berurutan.');
+
+      orderGame('kel-pool', 'kel-out', 'kel-fb', [
+        ['MULAI', 'term'],
+        ['INPUT sisi', 'io'],
+        ['keliling \u2190 4 \u00D7 sisi', 'pro'],
+        ['OUTPUT keliling', 'io'],
+        ['SELESAI', 'term']
+      ], 'Sempurna. Flowchartmu lengkap: ada mulai, input, proses, output, dan selesai.');
+
+      /* ================= KUIS ================= */
+      var QS = [
+        {
+          q: 'Simbol apa yang digunakan untuk menandai awal dan akhir sebuah program?',
+          o: ['Terminator', 'Proses', 'Keputusan', 'Konektor'], a: 0,
+          e: 'Terminator berbentuk oval dan wajib ada di awal serta akhir setiap flowchart.'
+        },
+        {
+          q: 'Simbol belah ketupat pada flowchart berfungsi untuk ...',
+          o: ['Menampilkan hasil ke layar', 'Memeriksa kondisi dan mengambil keputusan', 'Menghitung nilai variabel', 'Menyambung halaman'], a: 1,
+          e: 'Simbol keputusan memeriksa kondisi dan bercabang menjadi ya atau tidak.'
+        },
+        {
+          q: 'Kegiatan memasukkan data dari pengguna digambarkan dengan simbol ...',
+          o: ['Persegi panjang', 'Lingkaran', 'Jajar genjang', 'Oval'], a: 2,
+          e: 'Jajar genjang dipakai untuk input maupun output.'
+        },
+        {
+          q: 'Berapa garis keluar yang dimiliki simbol keputusan?',
+          o: ['Satu', 'Dua', 'Tiga', 'Tidak punya'], a: 1,
+          e: 'Dua garis keluar: satu untuk kondisi benar, satu untuk kondisi salah.'
+        },
+        {
+          q: 'Perhatikan alur: MULAI → INPUT p, l → luas ← p × l → OUTPUT luas → SELESAI. Jika p = 8 dan l = 5, keluarannya adalah ...',
+          o: ['13', '40', '26', '85'], a: 1,
+          e: 'Simbol proses mengalikan 8 dengan 5, sehingga luas bernilai 40.'
+        }
+      ];
+      var qi = 0, score = 0;
+      var qCount = document.getElementById('q-count'),
+        qText = document.getElementById('q-text'),
+        qOpts = document.getElementById('q-opts'),
+        qFb = document.getElementById('q-fb'),
+        qNext = document.getElementById('q-next'),
+        qBox = document.getElementById('quiz-box'),
+        qDone = document.getElementById('quiz-done');
+
+      function paintQ() {
+        var Q = QS[qi];
+        qCount.textContent = 'Soal ' + (qi + 1) + ' dari ' + QS.length + ' · skor ' + score;
+        qText.textContent = Q.q;
+        qOpts.innerHTML = '';
+        qFb.textContent = '';
+        qNext.style.display = 'none';
+        Q.o.forEach(function (txt, k) {
+          var b = document.createElement('button');
+          b.className = 'opt';
+          b.type = 'button';
+          b.textContent = txt;
+          b.addEventListener('click', function () {
+            Array.prototype.forEach.call(qOpts.children, function (x) { x.disabled = true; });
+            if (k === Q.a) {
+              b.classList.add('right'); score++;
+              qFb.className = 'feedback ok'; qFb.textContent = 'Benar. ' + Q.e;
+            } else {
+              b.classList.add('wrong');
+              qOpts.children[Q.a].classList.add('right');
+              qFb.className = 'feedback no'; qFb.textContent = 'Belum tepat. ' + Q.e;
+            }
+            qNext.style.display = 'inline-block';
+            qNext.textContent = qi === QS.length - 1 ? 'Lihat hasil' : 'Lanjut';
+          });
+          qOpts.appendChild(b);
+        });
+      }
+      qNext.addEventListener('click', function () {
+        qi++;
+        if (qi < QS.length) { paintQ(); return; }
+        qBox.style.display = 'none';
+        qDone.style.display = 'block';
+        document.getElementById('q-score').textContent = score + '/' + QS.length;
+        var msg = score === QS.length ? 'Luar biasa!' : score >= 3 ? 'Bagus, sedikit lagi!' : 'Ayo pelajari ulang simbolnya.';
+        var det = score === QS.length ? 'Kamu siap membuat flowchart sendiri di Flowgorithm.'
+          : score >= 3 ? 'Baca ulang slide kamus simbol, lalu coba kuis sekali lagi.'
+            : 'Kembali ke slide 5 dan balik semua kartu simbolnya, ya.';
+        document.getElementById('q-msg').textContent = msg;
+        document.getElementById('q-detail').textContent = det;
+      });
+      document.getElementById('q-retry').addEventListener('click', function () {
+        qi = 0; score = 0;
+        qBox.style.display = 'block';
+        qDone.style.display = 'none';
+        paintQ();
+      });
+      paintQ();
+
+      /* ================= LAB FLOWCHART ================= */
+      function $(id) { return document.getElementById(id); }
+      function el(tag, cls, txt) { var d = document.createElement(tag); if (cls) d.className = cls; if (txt != null) d.textContent = txt; return d; }
+
+      var LAB_KEY = 'kka-lab-flowchart-v1';
+      var uid = 1;
+      function mk(type, o) { var n = { id: uid++, type: type }; for (var k in o) n[k] = o[k]; return n; }
+      var lab = { name: '', theme: '', prog: [] };
+      var sel = null, menuAt = null, running = false, stopReq = false, stopWait = null, V = {};
+      var flowHost = $('lab-flow'), panel = $('lab-panel'), lterm = $('lab-term'), watch = $('lab-watch');
+      var CLS = { input: 'l-io', output: 'l-io', assign: 'l-pro', 'if': 'l-dec' };
+
+      function reId(list) { list.forEach(function (n) { n.id = uid++; if (n.type === 'if') { reId(n.yes); reId(n.no); } }); }
+      function save() { try { localStorage.setItem(LAB_KEY, JSON.stringify(lab)); } catch (e) { } }
+      function load() {
+        try {
+          var raw = localStorage.getItem(LAB_KEY);
+          if (!raw) return;
+          var o = JSON.parse(raw);
+          if (o && Array.isArray(o.prog)) { lab = o; reId(lab.prog); }
+        } catch (e) { }
+      }
+      function find(id, list) {
+        list = list || lab.prog;
+        for (var k = 0; k < list.length; k++) {
+          var n = list[k];
+          if (n.id === id) return { node: n, list: list, index: k };
+          if (n.type === 'if') { var r = find(id, n.yes) || find(id, n.no); if (r) return r; }
+        }
+        return null;
+      }
+      function label(n) {
+        if (n.type === 'input') return 'INPUT ' + (n.v || '?');
+        if (n.type === 'assign') return (n.v || '?') + ' \u2190 ' + (n.e || '?');
+        if (n.type === 'output') return 'OUTPUT ' + (n.e || '?');
+        return (n.c || 'kondisi') + ' ?';
+      }
+
+      function renderLab() {
+        flowHost.innerHTML = '';
+        var f = el('div', 'lflow');
+        var a = el('div', 'lnode l-term', 'MULAI'); a.setAttribute('data-term', 'MULAI'); f.appendChild(a);
+        renderList(lab.prog, f);
+        var z = el('div', 'lnode l-term', 'SELESAI'); z.setAttribute('data-term', 'SELESAI'); f.appendChild(z);
+        flowHost.appendChild(f);
+        $('lab-title').textContent = lab.theme || 'Flowchart tanpa judul';
+        $('lab-by').textContent = lab.name ? 'oleh ' + lab.name : '';
+        save();
+      }
+      function renderList(list, host) {
+        host.appendChild(addSlot(list, 0));
+        list.forEach(function (n, k) { host.appendChild(renderNode(n)); host.appendChild(addSlot(list, k + 1)); });
+      }
+      function addSlot(list, idx) {
+        var w = el('div', 'ladd');
+        w.appendChild(el('div', 'ln'));
+        if (menuAt && menuAt.list === list && menuAt.index === idx) {
+          var m = el('div', 'lmenu');
+          [['input', 'Input'], ['assign', 'Proses'], ['output', 'Output'], ['if', 'Keputusan']].forEach(function (t) {
+            var b = el('button', 'lm lm-' + t[0], t[1]); b.type = 'button';
+            b.addEventListener('click', function () {
+              var n = t[0] === 'if' ? mk('if', { c: '', yes: [], no: [] }) : mk(t[0], { v: '', e: '' });
+              list.splice(idx, 0, n);
+              menuAt = null; sel = n.id;
+              renderLab(); renderPanel();
+              toPanel(); var f = panel.querySelector('input'); if (f) f.focus({ preventScroll: true });
+            });
+            m.appendChild(b);
+          });
+          var x = el('button', 'lm lm-x', 'Batal'); x.type = 'button';
+          x.addEventListener('click', function () { menuAt = null; renderLab(); });
+          m.appendChild(x);
+          w.appendChild(m);
+        } else {
+          var p = el('button', 'lplus', '+'); p.type = 'button';
+          p.title = 'Tambah simbol di sini'; p.setAttribute('aria-label', 'Tambah simbol di sini');
+          p.addEventListener('click', function () { if (running) return; menuAt = { list: list, index: idx }; renderLab(); });
+          w.appendChild(p);
+        }
+        w.appendChild(el('div', 'ln arr'));
+        return w;
+      }
+      function renderNode(n) {
+        var b = el('button', 'lnode ' + CLS[n.type] + (sel === n.id ? ' sel' : ''), label(n));
+        b.type = 'button'; b.setAttribute('data-id', n.id);
+        b.addEventListener('click', function () { if (running) return; sel = n.id; menuAt = null; renderLab(); renderPanel(); toPanel(); });
+        if (n.type !== 'if') return b;
+        var w = el('div', 'lif'); w.appendChild(b); w.appendChild(el('div', 'ln'));
+        var br = el('div', 'lbr');
+        [['yes', 'Ya', 'ok'], ['no', 'Tidak', 'no']].forEach(function (s) {
+          var c = el('div', 'lcol');
+          c.appendChild(el('div', 'ln'));
+          c.appendChild(el('div', 'ltag ' + s[2], s[1]));
+          renderList(n[s[0]], c);
+          c.appendChild(el('div', 'lgrow'));
+          br.appendChild(c);
+        });
+        w.appendChild(br);
+        return w;
+      }
+
+      function field(n, key, text, ph) {
+        var l = el('label', 'lfield'); l.appendChild(el('span', null, text));
+        var i = el('input', 'inp'); i.value = n[key] || ''; i.placeholder = ph;
+        i.spellcheck = false; i.setAttribute('autocapitalize', 'off'); i.setAttribute('autocomplete', 'off');
+        i.addEventListener('input', function () {
+          if (key === 'v') { var c = i.value.replace(/\s+/g, '_'); if (c !== i.value) i.value = c; }
+          n[key] = i.value; renderLab();
+        });
+        l.appendChild(i);
+        return l;
+      }
+      function narrow() { return window.innerWidth < 900; }
+      function toPanel() { if (narrow()) panel.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+      function renderPanel() {
+        panel.innerHTML = '';
+        var r = sel && find(sel);
+        if (!r) {
+          panel.appendChild(el('h3', null, 'Panel simbol'));
+          panel.appendChild(el('p', 'note', 'Ketuk tombol + untuk menambah simbol, lalu ketuk simbolnya untuk mengisi nama variabel atau rumus.'));
+          return;
+        }
+        var n = r.node;
+        var nm = { input: 'Input', assign: 'Proses', output: 'Output', 'if': 'Keputusan' };
+        panel.appendChild(el('h3', null, 'Simbol ' + nm[n.type]));
+        if (n.type === 'input') panel.appendChild(field(n, 'v', 'Nama variabel yang diisi pengguna', 'contoh: nilai'));
+        if (n.type === 'assign') {
+          panel.appendChild(field(n, 'v', 'Simpan hasilnya ke variabel', 'contoh: luas'));
+          panel.appendChild(field(n, 'e', 'Rumus', 'contoh: panjang * lebar'));
+        }
+        if (n.type === 'output') panel.appendChild(field(n, 'e', 'Yang ditampilkan', 'contoh: "Luas: " & luas'));
+        if (n.type === 'if') panel.appendChild(field(n, 'c', 'Kondisi (benar atau salah)', 'contoh: nilai >= 75'));
+        var tips = {
+          input: 'Nama variabel tanpa spasi. Spasi otomatis diganti garis bawah.',
+          assign: 'Semua variabel di rumus harus sudah punya nilai dari simbol sebelumnya.',
+          output: 'Teks ditulis di dalam tanda kutip, lalu digabung dengan variabel memakai &.',
+          'if': 'Jika kondisinya benar, program lewat jalur Ya. Jika salah, lewat jalur Tidak.'
+        };
+        panel.appendChild(el('p', 'note', tips[n.type]));
+        var row = el('div', 'ltools');
+        var d = el('button', 'nav', 'Hapus simbol'); d.type = 'button';
+        d.addEventListener('click', function () { r.list.splice(r.index, 1); sel = null; renderLab(); renderPanel(); });
+        var ok = el('button', 'nav', 'Selesai mengisi'); ok.type = 'button';
+        ok.addEventListener('click', function () {
+          var id = sel; sel = null; renderLab(); renderPanel();
+          if (narrow()) { var e = flowHost.querySelector('[data-id="' + id + '"]'); if (e) e.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+        });
+        row.appendChild(ok); row.appendChild(d);
+        panel.appendChild(row);
+      }
+
+      /* ---- penerjemah rumus: hanya token yang dikenal yang boleh lewat ---- */
+      function evalExpr(src) {
+        src = String(src || '').trim();
+        if (!src) throw new Error('Ada simbol yang rumus atau isinya masih kosong.');
+        var toks = src.match(/"[^"]*"|\d+(?:\.\d+)?|[A-Za-z_]\w*|==|!=|<>|<=|>=|&&|\|\||[-+*\/%()<>=&!]|\s+/g);
+        if (!toks || toks.join('') !== src) throw new Error('Rumus "' + src + '" memuat tanda yang tidak dikenali. Cek tanda kutip dan operatornya.');
+        var js = toks.map(function (t) {
+          if (/^\s+$/.test(t)) return ' ';
+          if (t.charAt(0) === '"') return JSON.stringify(t.slice(1, -1));
+          if (/^\d/.test(t)) return t;
+          if (/^[A-Za-z_]/.test(t)) {
+            var lo = t.toLowerCase();
+            if (lo === 'and') return '&&';
+            if (lo === 'or') return '||';
+            if (lo === 'not') return '!';
+            if (lo === 'mod') return '%';
+            if (lo === 'true' || lo === 'benar') return 'true';
+            if (lo === 'false' || lo === 'salah') return 'false';
+            if (!Object.prototype.hasOwnProperty.call(V, t))
+              throw new Error('Variabel "' + t + '" belum punya nilai. Isi dulu lewat simbol Input atau Proses sebelumnya.');
+            return 'V[' + JSON.stringify(t) + ']';
+          }
+          if (t === '&') return '+""+';
+          if (t === '=' || t === '==') return '===';
+          if (t === '!=' || t === '<>') return '!==';
+          return t;
+        }).join('');
+        try { return Function('V', '"use strict"; return (' + js + ');')(V); }
+        catch (e) { throw new Error('Penulisan rumus "' + src + '" belum benar.'); }
+      }
+      function fmt(x) {
+        if (typeof x === 'number') { if (!isFinite(x)) throw new Error('Terjadi pembagian dengan nol.'); return String(Math.round(x * 1e8) / 1e8); }
+        if (typeof x === 'boolean') return x ? 'benar' : 'salah';
+        return String(x);
+      }
+      function checkVar(n) {
+        if (!n.v) throw new Error('Ada simbol ' + (n.type === 'input' ? 'Input' : 'Proses') + ' yang belum diberi nama variabel.');
+        if (!/^[A-Za-z_]\w*$/.test(n.v)) throw new Error('Nama variabel "' + n.v + '" tidak boleh diawali angka atau memuat tanda baca.');
+      }
+      function log(t, cls) { var d = el('div', cls || null, t); lterm.appendChild(d); lterm.scrollTop = lterm.scrollHeight; }
+      function paintWatch() {
+        var keys = Object.keys(V);
+        if (!keys.length) { watch.innerHTML = '<p class="note" style="margin:0">Belum ada variabel. Nilainya muncul di sini saat program berjalan.</p>'; return; }
+        var t = '<table><tr><th>Variabel</th><th>Nilai</th></tr>';
+        keys.forEach(function (k) { t += '<tr><td>' + k + '</td><td></td></tr>'; });
+        watch.innerHTML = t + '</table>';
+        var cells = watch.querySelectorAll('td:last-child');
+        keys.forEach(function (k, j) { cells[j].textContent = typeof V[k] === 'string' ? '"' + V[k] + '"' : fmt(V[k]); });
+      }
+      function lit(q) {
+        Array.prototype.forEach.call(flowHost.querySelectorAll('.run'), function (x) { x.classList.remove('run'); });
+        if (!q) return;
+        var e = flowHost.querySelector(q);
+        if (e) { e.classList.add('run'); try { e.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' }); } catch (_) { } }
+      }
+      function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+      function pace() { return +$('lab-speed').value; }
+      function ask(name) {
+        return new Promise(function (res, rej) {
+          var row = el('div', 'lask');
+          row.appendChild(el('span', null, 'Masukkan ' + name + ':'));
+          var i = el('input', 'inp'); i.setAttribute('autocomplete', 'off'); i.setAttribute('aria-label', 'Nilai untuk ' + name);
+          var b = el('button', 'nav key', 'Kirim'); b.type = 'button';
+          function send() {
+            var raw = i.value.trim();
+            if (raw === '') { i.focus(); return; }
+            var val = /^-?\d+([.,]\d+)?$/.test(raw) ? parseFloat(raw.replace(',', '.')) : raw;
+            row.remove(); stopWait = null;
+            log('> ' + name + ' = ' + raw, 'inl');
+            res(val);
+          }
+          b.addEventListener('click', send);
+          i.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); send(); } });
+          row.appendChild(i); row.appendChild(b);
+          lterm.appendChild(row); lterm.scrollTop = lterm.scrollHeight;
+          i.focus();
+          stopWait = function () { row.remove(); rej('STOP'); };
+        });
+      }
+      function execList(list) {
+        var k = 0;
+        function step() {
+          if (k >= list.length) return Promise.resolve();
+          var n = list[k++];
+          if (stopReq) return Promise.reject('STOP');
+          lit('[data-id="' + n.id + '"]');
+          return sleep(pace()).then(function () {
+            if (stopReq) throw 'STOP';
+            if (n.type === 'input') { checkVar(n); return ask(n.v).then(function (v) { V[n.v] = v; paintWatch(); }); }
+            if (n.type === 'assign') { checkVar(n); var r = evalExpr(n.e); fmt(r); V[n.v] = r; paintWatch(); log('  ' + n.v + ' \u2190 ' + fmt(r), 'dim'); return; }
+            if (n.type === 'output') { log(fmt(evalExpr(n.e))); return; }
+            var c = evalExpr(n.c);
+            if (typeof c !== 'boolean') throw new Error('Kondisi "' + n.c + '" harus bernilai benar atau salah, misalnya nilai >= 75.');
+            log('  ' + n.c + ' bernilai ' + (c ? 'benar, lewat jalur Ya' : 'salah, lewat jalur Tidak'), 'dim');
+            return execList(c ? n.yes : n.no);
+          }).then(step);
+        }
+        return step();
+      }
+      function setBtns() {
+        $('lab-run').disabled = running; $('lab-stop').disabled = !running;
+        ['lab-ex', 'lab-clear'].forEach(function (id) { $(id).disabled = running; });
+      }
+      function runLab() {
+        if (running) return;
+        lterm.innerHTML = '';
+        if (!lab.prog.length) { log('Flowchart masih kosong. Ketuk tombol + di antara MULAI dan SELESAI untuk menambah simbol.', 'err'); return; }
+        running = true; stopReq = false; V = {}; sel = null; menuAt = null;
+        renderLab(); renderPanel(); paintWatch(); setBtns();
+        lit('[data-term="MULAI"]'); log('program dimulai', 'dim');
+        sleep(pace()).then(function () { return execList(lab.prog); })
+          .then(function () { lit('[data-term="SELESAI"]'); log('program selesai tanpa galat', 'okl'); })
+          .catch(function (e) { if (e === 'STOP') log('program dihentikan', 'dim'); else log('Galat: ' + (e && e.message ? e.message : e), 'err'); })
+          .then(function () { running = false; setBtns(); setTimeout(function () { if (!running) lit(null); }, 1400); });
+      }
+      function pseudo(list, ind) {
+        var out = '', pad = new Array(ind + 1).join('   ');
+        list.forEach(function (n) {
+          if (n.type === 'input') out += pad + 'BACA ' + (n.v || '?') + '\n';
+          else if (n.type === 'assign') out += pad + (n.v || '?') + ' \u2190 ' + (n.e || '?') + '\n';
+          else if (n.type === 'output') out += pad + 'TAMPILKAN ' + (n.e || '?') + '\n';
+          else out += pad + 'JIKA ' + (n.c || '?') + ' MAKA\n' + pseudo(n.yes, ind + 1) + pad + 'LAINNYA\n' + pseudo(n.no, ind + 1) + pad + 'AKHIR JIKA\n';
+        });
+        return out;
+      }
+      function example() {
+        lab.theme = lab.theme || 'Kasir kantin: menghitung uang kembalian';
+        lab.prog = [
+          mk('input', { v: 'harga_barang' }), mk('input', { v: 'jumlah_beli' }), mk('input', { v: 'uang_bayar' }),
+          mk('assign', { v: 'total', e: 'harga_barang * jumlah_beli' }),
+          mk('assign', { v: 'kembalian', e: 'uang_bayar - total' }),
+          mk('output', { e: '"Total belanja: " & total' }),
+          mk('output', { e: '"Kembalian: " & kembalian' })
+        ];
+        sel = null; menuAt = null;
+        $('lab-theme').value = lab.theme;
+        renderLab(); renderPanel();
+        lterm.textContent = 'Contoh dimuat. Tekan Jalankan, lalu coba data 5000, 3, dan 20000.';
+      }
+
+      $('lab-run').addEventListener('click', runLab);
+      $('lab-stop').addEventListener('click', function () { stopReq = true; if (stopWait) stopWait(); });
+      $('lab-ex').addEventListener('click', function () {
+        if (lab.prog.length && !confirm('Flowchart yang sekarang akan diganti dengan contoh. Lanjutkan?')) return;
+        example();
+      });
+      $('lab-clear').addEventListener('click', function () {
+        if (lab.prog.length && !confirm('Hapus semua simbol di kanvas?')) return;
+        lab.prog = []; sel = null; menuAt = null; renderLab(); renderPanel();
+        lterm.textContent = 'Kanvas kosong. Ketuk + untuk mulai menyusun.';
+      });
+      $('lab-pc').addEventListener('click', function () {
+        var pre = $('lab-pseudo');
+        pre.hidden = !pre.hidden;
+        this.textContent = pre.hidden ? 'Lihat pseudocode' : 'Tutup pseudocode';
+        pre.textContent = 'MULAI\n' + pseudo(lab.prog, 1) + 'SELESAI';
+      });
+      $('lab-name').addEventListener('input', function () { lab.name = this.value; renderLab(); });
+      $('lab-theme').addEventListener('input', function () { lab.theme = this.value; renderLab(); });
+
+      var labIndex = slides.indexOf(document.getElementById('s-lab'));
+      Array.prototype.forEach.call(document.querySelectorAll('[data-go]'), function (b) {
+        b.addEventListener('click', function () { go(labIndex); });
+      });
+      $('try-ex').addEventListener('click', function () {
+        if (lab.prog.length && !confirm('Flowchart di Lab akan diganti dengan contoh. Lanjutkan?')) return;
+        example(); go(labIndex);
+      });
+
+      load();
+      $('lab-name').value = lab.name || '';
+      $('lab-theme').value = lab.theme || '';
+      renderLab(); renderPanel(); paintWatch();
+
+      go(0);
+    })();
+  </script>
+</body>
+
+</html>
